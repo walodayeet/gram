@@ -1,5 +1,7 @@
 FROM golang:1.26-bookworm AS builder
 WORKDIR /app
+# This will show up in Dokploy logs to verify the version
+RUN go version
 COPY . .
 RUN go mod download
 RUN go build -o /app/gram ./server/main.go
