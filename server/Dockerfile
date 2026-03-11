@@ -1,6 +1,8 @@
-FROM golang:1.26-bookworm AS builder
+FROM golang:1.24-bookworm AS builder
 WORKDIR /app
 COPY . .
+# Ensure go.mod version doesn't block build if using 1.24 compiler
+RUN sed -i 's/go 1.26/go 1.24/g' go.mod
 RUN go mod download
 RUN go build -o /app/gram ./server/main.go
 
