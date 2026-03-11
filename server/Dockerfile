@@ -1,12 +1,11 @@
 FROM golang:1.24-bookworm AS builder
 WORKDIR /app
-# Copy the entire root since go.mod is in the root
+# Log version to confirm we are on 1.24+
+RUN go version
 COPY . .
-# Downgrade the version in go.mod to 1.24 just to be safe with the 1.24 compiler, 
-# but keep the 'tool' block which 1.24 supports.
+# Downgrade go.mod to 1.24 to match compiler while keeping 'tool' block support
 RUN sed -i 's/go 1.26/go 1.24/g' go.mod
 RUN go mod download
-# The main.go is actually in the server/ directory according to your file tree
 RUN go build -o /app/gram ./server/main.go
 
 FROM debian:bookworm-slim
