@@ -5,29 +5,16 @@ ENV GRAM_SERVER_URL=
 
 RUN corepack enable
 
-# Copy ALL workspace metadata first
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./ 
-RUN mkdir -p client/dashboard client/sdk elements server functions ts-framework/functions evaluation
-COPY client/dashboard/package.json ./client/dashboard/
-COPY client/sdk/package.json ./client/sdk/
-COPY elements/package.json ./elements/
-COPY server/package.json ./server/
-COPY functions/package.json ./functions/
-COPY ts-framework/functions/package.json ./ts-framework/functions/
-COPY evaluation/package.json ./evaluation/
-
-# Install everything to establish workspace links
-RUN pnpm install --frozen-lockfile
-
-# Copy source code
+# Copy everything first to ensure workspace integrity
+# This is more reliable for complex monorepos in Docker
 COPY . .
 
-# Build internal libraries in order
-RUN pnpm run --filter @gram/client build
-RUN pnpm run --filter @gram-ai/elements build
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
 
-# Finally build the dashboard
-RUN pnpm run --filter dashboard build
+# Build dashboard and all its workspace dependencies (SDKs, elements, etc.)
+# The '...' suffix is the key to recursive workspace building
+RUN pnpm run --filter dashboard... build
 
 FROM node:20-bookworm-slim
 WORKDIR /app
