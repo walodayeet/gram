@@ -1,9 +1,11 @@
 FROM golang:1.24-bookworm AS builder
 WORKDIR /app
+RUN go version
 COPY . .
-# Ensure go.mod version doesn't block build; 1.24 is the minimum for the 'tool' block
+# Safeguard: downgrade go.mod version to match compiler while keeping tool block support
 RUN sed -i 's/go 1.26/go 1.24/g' go.mod
 RUN go mod download
+# Build from the correct entrypoint
 RUN go build -o /app/gram ./server/main.go
 
 FROM debian:bookworm-slim
