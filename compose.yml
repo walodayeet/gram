@@ -134,10 +134,12 @@ services:
     build:
       context: .
       dockerfile: client/dashboard/Dockerfile
+      args:
+        GRAM_SERVER_URL: ''
     ports:
     - 3000:3000
     environment:
-    - NEXT_PUBLIC_API_URL=
+    - GRAM_SERVER_URL=
     depends_on:
     - gram-server
 volumes:
