@@ -5,26 +5,29 @@ ENV GRAM_SERVER_URL=
 
 RUN corepack enable
 
-# Copy root workspace files
+# Copy workspace config and lockfile
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./ 
 
-# Copy all package.json files for correct workspace resolution
+# Copy ALL package.json files across the monorepo
+# This ensures pnpm install creates correct symbolic links for all dependencies
+RUN mkdir -p client/dashboard client/sdk server functions elements ts-framework/functions evaluation
 COPY client/dashboard/package.json ./client/dashboard/
 COPY client/sdk/package.json ./client/sdk/
 COPY server/package.json ./server/
 COPY functions/package.json ./functions/
+COPY elements/package.json ./elements/
+COPY ts-framework/functions/package.json ./ts-framework/functions/
+COPY evaluation/package.json ./evaluation/
 
-# Install all dependencies and create workspace symlinks
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy the entire source code
 COPY . .
 
-# CRITICAL: Build the SDK dependency first so its 'dist/esm' folder exists
-RUN pnpm run --filter @gram/client build
-
-# Now build the dashboard
-RUN pnpm run --filter dashboard build
+# Build the dashboard and ALL its workspace dependencies recursively
+# This will build @gram/client, @gram-ai/elements, and others in the correct order
+RUN pnpm run --filter dashboard... build
 
 FROM node:20-bookworm-slim
 WORKDIR /app
