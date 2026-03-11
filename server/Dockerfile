@@ -1,7 +1,7 @@
 FROM golang:1.24-bookworm AS builder
 WORKDIR /app
 COPY . .
-# Downgrade version in go.mod to 1.24 to match compiler (maintaining tool block support)
+# Ensure go.mod version doesn't block build; 1.24 is the minimum for the 'tool' block
 RUN sed -i 's/go 1.26/go 1.24/g' go.mod
 RUN go mod download
 RUN go build -o /app/gram ./server/main.go
