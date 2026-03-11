@@ -1,7 +1,6 @@
 FROM golang:1.26-bookworm AS builder
 WORKDIR /app
 COPY . .
-# No need to downgrade anymore as we are using the correct compiler version
 RUN go mod download
 RUN go build -o /app/gram ./server/main.go
 
