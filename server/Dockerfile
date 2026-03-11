@@ -1,10 +1,8 @@
-FROM golang:1.24-bookworm AS builder
+FROM golang:1.26-bookworm AS builder
 WORKDIR /app
-# Log version to confirm we are on 1.24+
+# Log version to verify compiler support in Dokploy logs
 RUN go version
 COPY . .
-# Downgrade go.mod to 1.24 to match compiler while keeping 'tool' block support
-RUN sed -i 's/go 1.26/go 1.24/g' go.mod
 RUN go mod download
 RUN go build -o /app/gram ./server/main.go
 
