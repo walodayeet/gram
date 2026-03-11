@@ -14,7 +14,7 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - 'pg_isready -U  -d '
+      - pg_isready -U ${DB_USER} -d ${DB_NAME}
       interval: 5s
       timeout: 5s
       retries: 5
@@ -121,8 +121,8 @@ services:
       context: .
       dockerfile: server/Dockerfile
     environment:
-    - DATABASE_URL=postgresql://:@gram-db:5432/
-    - REDIS_URL=redis://:@gram-cache:35299
+    - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@gram-db:5432/${DB_NAME}
+    - REDIS_URL=redis://:${REDIS_PASSWORD}@gram-cache:35299
     - CLICKHOUSE_URL=http://clickhouse:8123
     - GO_ENV=production
     depends_on:
@@ -135,11 +135,11 @@ services:
       context: .
       dockerfile: client/dashboard/Dockerfile
       args:
-        GRAM_SERVER_URL: ''
+        GRAM_SERVER_URL: ${PUBLIC_API_URL}
     ports:
     - 3000:3000
     environment:
-    - GRAM_SERVER_URL=
+    - GRAM_SERVER_URL=${PUBLIC_API_URL}
     depends_on:
     - gram-server
 volumes:

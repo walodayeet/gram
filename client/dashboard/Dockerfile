@@ -1,13 +1,14 @@
 FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 ARG GRAM_SERVER_URL
-ENV GRAM_SERVER_URL=
+ENV GRAM_SERVER_URL=$GRAM_SERVER_URL
 
 RUN corepack enable
+# Copy the entire monorepo to ensure pnpm workspace links are perfect
 COPY . .
 RUN pnpm install --frozen-lockfile
 
-# Build dashboard and all internal dependencies in topological order
+# Build every local dependency in the correct order
 RUN pnpm run --filter dashboard... build
 
 FROM node:20-bookworm-slim
