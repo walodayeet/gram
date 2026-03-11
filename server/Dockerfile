@@ -1,11 +1,13 @@
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:a9329520abc449e3b14d5bc3a6ffae065bdde0f02667fa10880c49b35c109fd1
-
+FROM golang:1.23-bookworm AS builder
 WORKDIR /app
+COPY . .
+RUN go mod download
+RUN go build -o /app/gram ./server/main.go
 
-USER nonroot
-
-COPY --chown=nonroot:nonroot --chmod=0755 ./bin/gram /app/gram
-# Add this line to copy the migrations folder
-COPY ./migrations ./migrations
-
+FROM debian:bookworm-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/gram /app/gram
+COPY --from=builder /app/server/migrations /app/migrations
+ENV GO_ENV=production
 ENTRYPOINT ["/app/gram"]

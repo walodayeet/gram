@@ -1,11 +1,14 @@
-FROM nginxinc/nginx-unprivileged:alpine
+FROM node:20-bookworm-slim AS builder
+WORKDIR /app
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./ 
+COPY client/dashboard/package.json ./client/dashboard/
+RUN corepack enable && pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm run --filter dashboard build
 
-# Copy the build output to nginx
-COPY dist /usr/share/nginx/html
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+FROM node:20-bookworm-slim
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=builder /app/client/dist ./dist
 EXPOSE 3000
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
