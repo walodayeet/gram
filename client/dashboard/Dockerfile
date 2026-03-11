@@ -5,16 +5,18 @@ ENV GRAM_SERVER_URL=
 
 RUN corepack enable
 
-# Copy everything first to ensure workspace integrity
-# This is more reliable for complex monorepos in Docker
+# Copy everything to ensure all workspace dependencies and configs are present
 COPY . .
 
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build dashboard and all its workspace dependencies (SDKs, elements, etc.)
-# The '...' suffix is the key to recursive workspace building
-RUN pnpm run --filter dashboard... build
+# Sequential build of workspace dependencies to ensure 'dist' folders exist
+RUN pnpm run --filter @gram/client build
+RUN pnpm run --filter @gram-ai/elements build
+
+# Finally build the dashboard UI
+RUN pnpm run --filter dashboard build
 
 FROM node:20-bookworm-slim
 WORKDIR /app
