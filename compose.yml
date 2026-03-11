@@ -117,15 +117,15 @@ services:
       mcp-registry-db:
         condition: service_healthy
   gram-server:
-    build:
+    build: &id001
       context: .
       dockerfile: server/Dockerfile
-    environment:
+    environment: &id002
     - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@gram-db:5432/${DB_NAME}
     - REDIS_URL=redis://:${REDIS_PASSWORD}@gram-cache:35299
     - CLICKHOUSE_URL=http://clickhouse:8123
     - GO_ENV=production
-    depends_on:
+    depends_on: &id003
       gram-db:
         condition: service_healthy
       gram-cache:
@@ -142,6 +142,12 @@ services:
     - GRAM_SERVER_URL=${PUBLIC_API_URL}
     depends_on:
     - gram-server
+  gram-worker:
+    build: *id001
+    command:
+    - worker
+    environment: *id002
+    depends_on: *id003
 volumes:
   postgres_data:
     driver: local

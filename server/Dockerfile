@@ -10,4 +10,6 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 COPY --from=builder /app/gram /app/gram
 COPY --from=builder /app/server/migrations /app/server/migrations
 ENV GO_ENV=production
+# Entrypoint is just the binary, CMD is the default action
 ENTRYPOINT ["/app/gram"]
+CMD ["start"]
